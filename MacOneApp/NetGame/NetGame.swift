@@ -70,7 +70,7 @@ class NetGame: NSObject {
     /// 准备游戏
     func readyGame(){
         // 向服务器发送准备游戏
-        let msg = MSG(cmd: "ready", content: "",point: nil)
+        let msg = MSG(cmd: .ready, content: "",point: nil)
         client.sendMsg(msg: msg)
         netGameState = .realy
     }
@@ -99,17 +99,17 @@ class NetGame: NSObject {
     
     /// 网络发布鼠标按下
     func netMouseDown(point: NSPoint){
-        let msg = MSG(cmd: "msg", content: "MouseDown", point: point)
+        let msg = MSG(cmd: .message, content: "MouseDown", point: point)
         client.sendMsg(msg: msg)
     }
     /// 网络发布鼠标拖动
     func netMouseDragged(point: NSPoint){
-        let msg = MSG(cmd: "msg", content: "MouseDragged", point: point)
+        let msg = MSG(cmd: .message, content: "MouseDragged", point: point)
         client.sendMsg(msg: msg)
     }
     /// 网络发布鼠标弹起
     func netMouseUp(point: NSPoint){
-        let msg = MSG(cmd: "msg", content: "MouseUp", point: point)
+        let msg = MSG(cmd: .message, content: "MouseUp", point: point)
         client.sendMsg(msg: msg)
     }
 

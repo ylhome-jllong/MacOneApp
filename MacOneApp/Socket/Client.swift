@@ -38,7 +38,7 @@ class Client: NSObject {
     /// 断开连接
     func close(){
         // 发消息给服务器已关闭客户端管理
-        self.sendMsg(msg: MSG(cmd: "ClientClose", content: "", point: nil))
+        self.sendMsg(msg: MSG(cmd: .clientClose, content: "", point: nil))
        
     }
     
@@ -94,7 +94,7 @@ class Client: NSObject {
                 // 有效消息
                 if let msg = self.readMsg(){
                     self.processMessage(msg: msg)
-                    if(msg.cmd == "ClientClose"){ return}//结束循环
+                    if(msg.cmd == .clientClose){ return}//结束循环
                 }
                 // 无效消息
                 else{
@@ -107,14 +107,14 @@ class Client: NSObject {
     private func processMessage(msg:MSG){
         
         switch(msg.cmd){
-        case "msg":
+        case .message:
             callbackFunc?(msg)
             print("Clent_msg:\(msg.content)")
-        case "ClientClose":
+        case .clientClose:
             // 断开连接
             self.tcpClient.close()
             // 让上一层处理
-            callbackFunc?(MSG(cmd: "", content: "ClientClose", point: nil))
+            callbackFunc?(MSG(cmd:.message, content: "ClientClose", point: nil))
             
         default: break
         }

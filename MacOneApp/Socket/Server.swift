@@ -14,6 +14,18 @@ import SwiftSocket
 
 /// Socket 服务器端
 class Server: NSObject {
+    //  枚举类型要默认支持 Codable 协议，需要声明为具有原始值的形式，
+    //  并且原始值的类型需要支持 Codable 协议：
+    /// 网络通信层命令
+    enum CMD: Int,Codable {
+        /// 传递的信息
+        case message
+        /// 关闭客户端
+        case clientClose
+        /// 游戏准备（要在后续的版本中删除这个命令）
+        case ready
+        
+    }
     
  
     /// 服务器连接对象
@@ -84,9 +96,9 @@ class Server: NSObject {
             clientManagers.remove(at: possibleIndex)
             
             // 回发消息 “ClientClose“
-            clientMangager.sendMsg(msg: MSG(cmd: "ClientClose", content: "", point: nil))
+            clientMangager.sendMsg(msg: MSG(cmd: .clientClose, content: "", point: nil))
             // 如果有对战方也通知其关闭
-            clientMangager.opponent?.sendMsg(msg: MSG(cmd: "ClientClose", content: "", point: nil))
+            clientMangager.opponent?.sendMsg(msg: MSG(cmd: .clientClose, content: "", point: nil))
             // 关闭客户端链接
             clientMangager.kill()
         }
@@ -97,15 +109,15 @@ class Server: NSObject {
     func processClientMsg(clientManager: ClientManager, msg: MSG)  {
         // 消息处理
         switch msg.cmd {
-        case "msg":// 消息转发给对方
+        case .message:// 消息转发给对方
             if(clientManager.opponent != nil){
                 clientManager.opponent?.sendMsg(msg: msg)
             }
             // 消息打印在服务器
 //            print("server_msg:\(msg.content)")
-        case "ready"://准备游戏（为了简单先只接收两个客户端）
+        case .ready://准备游戏（为了简单先只接收两个客户端）
             msgReady(clientManager: clientManager)
-        case "ClientClose":// 关闭客户端连接
+        case .clientClose:// 关闭客户端连接
             remove(clientManager)
         default:
             print("消息处理Err:\(msg)")
@@ -123,8 +135,8 @@ class Server: NSObject {
                 clientManager.gameState = "play"
                 clientManager2.gameState = "play"
                 // 回发开始消息
-                clientManager.sendMsg(msg: MSG(cmd: "msg", content: "play1"))
-                clientManager2.sendMsg(msg: MSG(cmd: "msg", content: "play2"))
+                clientManager.sendMsg(msg: MSG(cmd:.message, content: "play1"))
+                clientManager2.sendMsg(msg: MSG(cmd: .message, content: "play2"))
                 
                 print("Server: 客户端配对成功\(clientManager.tcpClient!.address)--\(clientManager2.tcpClient!.address)")
                 return
@@ -176,7 +188,7 @@ class ClientManager: NSObject {
                 if let msg = self.readMsg(){
                     self.processMsg(msg: msg)
                     switch msg.cmd {
-                    case "ClientClose":return //结束消息循环
+                    case .clientClose:return //结束消息循环
                     default:break
                     }
                 }
@@ -249,7 +261,7 @@ class ClientManager: NSObject {
 // 通信的信息包 满足可转换协议
 struct MSG: Codable {
     /// 命令：“msg” ontent:为通信内容。
-    var cmd: String
+    var cmd: Server.CMD
     var content: String
     var point: NSPoint?
 }
