@@ -207,7 +207,6 @@ class ViewController: NSViewController {
             
             // 初始化netGame实例
             //if(netGame == nil){netGame = NetGame()}
-            netServerVC!.netGame = netGame
             netServerVC!.callbackFunc = self.callbackFunc
         }
         // 弹出窗口

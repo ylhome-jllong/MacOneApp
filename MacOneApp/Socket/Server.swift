@@ -22,21 +22,52 @@ class Server: NSObject {
         case message
         /// 关闭客户端
         case clientClose
-        /// 游戏准备（要在后续的版本中删除这个命令）
-        case ready
         
     }
+    /// 服务器状态
+    enum ServerState {
+        /// 服务中
+        case serving
+        /// 关闭
+        case shutdown
+    }
+
     
  
     /// 服务器连接对象
     var tcpServer: TCPServer!
     /// 服务器工作状态
-    var serverState = ServerState(stare: false, describe: "服务器关闭")
+    var serverState = ServerState.shutdown
     /// 客户端管理器
     var clientManagers = [ClientManager]()
+    /// 服务器IP
+    private(set) var serverIP = ""
+    
+    /// 有新客户端接入时回调函数
+    var addClientCallbackFunc: ((ClientManager)->())?
+    /// 有客户端断开时回调函数
+    var delClientCallbackFunc: ((ClientManager)->())?
+    /// 有消息到达客户端时回调函数
+    var msgArriveCallBackFunc:((ClientManager,Data)->())?
     
     
-    /// 启动服务器 错误返回原因，成功返回IP
+    /// 转化为可发送的数据（类函数）
+    static func toSendData(msg: MSG)->Data?{
+        // 序列化数据
+        var sendData: Data?
+        let jsonEncoder = JSONEncoder()
+        if let jsonData=try? jsonEncoder.encode(msg){
+            // 获得消息长度
+            var len:Int32 = Int32(jsonData.count)
+            sendData = Data(bytes: &len, count: 4)
+            // 发送数据（含消息的长度值）
+            sendData!.append(jsonData)
+        }
+        return sendData
+    }
+    
+    
+    /// 启动服务器 
     func stat(address: String, port: Int32) -> ServerState{
         
         // 初始化tcpSever对象
@@ -45,14 +76,15 @@ class Server: NSObject {
         let status = tcpServer.listen()
         switch status {
         case .success:
-            serverState.stare = true
-            serverState.describe = "开启服务：\(tcpServer.address):\(tcpServer.port)"
+            serverState = .serving
+            serverIP = "\(tcpServer.address):\(tcpServer.port)"
             // 开始监听循环
             listenLoop()
             
         case .failure(let error) :
-            serverState.stare = false
-            serverState.describe = "开启服务失败：\(error.localizedDescription)"
+            serverState = .shutdown
+            serverIP = ""
+            print("开启服务失败：\(error.localizedDescription)")
         }
         return serverState
     }
@@ -62,7 +94,7 @@ class Server: NSObject {
             // 新建线程开始监听
         DispatchQueue(label: "Server").async {
                 // 只要服务开着就监听
-                while self.serverState.stare {
+            while self.serverState == .serving {
                     let tcpClient = self.tcpServer.accept()
                     // 有正确的客户端接入新建线与他沟通
                     if (tcpClient != nil){
@@ -76,8 +108,7 @@ class Server: NSObject {
     /// 停止服务
     func stop() -> ServerState{
         // 服务器停止监听
-        self.serverState.stare = false
-        self.serverState.describe = "服务器关闭"
+        self.serverState = .shutdown
         // 关闭tcpServer接口
         _ = self.tcpServer.close()
         // 遍历所有客户端管理器并关闭他们
@@ -92,13 +123,13 @@ class Server: NSObject {
     
     ///  移除客户端
     func remove(_ clientMangager: ClientManager){
+        // 客户端断开回调
+        delClientCallbackFunc?(clientMangager)
+        
         if let possibleIndex=self.clientManagers.firstIndex(of: clientMangager){
             clientManagers.remove(at: possibleIndex)
-            
-            // 回发消息 “ClientClose“
-            clientMangager.sendMsg(msg: MSG(cmd: .clientClose, content: "", point: nil))
-            // 如果有对战方也通知其关闭
-            clientMangager.opponent?.sendMsg(msg: MSG(cmd: .clientClose, content: "", point: nil))
+            // 回发消息 .clientClose 指令
+            clientMangager.sendCloseMsg()
             // 关闭客户端链接
             clientMangager.kill()
         }
@@ -109,43 +140,14 @@ class Server: NSObject {
     func processClientMsg(clientManager: ClientManager, msg: MSG)  {
         // 消息处理
         switch msg.cmd {
-        case .message:// 消息转发给对方
-            if(clientManager.opponent != nil){
-                clientManager.opponent?.sendMsg(msg: msg)
-            }
-            // 消息打印在服务器
-//            print("server_msg:\(msg.content)")
-        case .ready://准备游戏（为了简单先只接收两个客户端）
-            msgReady(clientManager: clientManager)
+        case .message:// 消息到达传到上层处理
+            msgArriveCallBackFunc?(clientManager,msg.content!)
         case .clientClose:// 关闭客户端连接
             remove(clientManager)
-        default:
-            print("消息处理Err:\(msg)")
-            break
         }
     }
     
-    /// 处理准备游戏事件
-    private func msgReady(clientManager: ClientManager ){
-        for clientManager2 in clientManagers{
-            if (clientManager2.gameState == "ready"){
-                // 找到配对
-                clientManager.opponent = clientManager2
-                clientManager2.opponent = clientManager
-                clientManager.gameState = "play"
-                clientManager2.gameState = "play"
-                // 回发开始消息
-                clientManager.sendMsg(msg: MSG(cmd:.message, content: "play1"))
-                clientManager2.sendMsg(msg: MSG(cmd: .message, content: "play2"))
-                
-                print("Server: 客户端配对成功\(clientManager.tcpClient!.address)--\(clientManager2.tcpClient!.address)")
-                return
-            }
-        }
-        clientManager.gameState = "ready"
-        print("Server: 客户端ready\(clientManager.tcpClient!.address)")
-        
-    }
+   
     
     
     
@@ -157,6 +159,8 @@ class Server: NSObject {
         clientManager.server=self
         // 加入客户端管理列表
         clientManagers.append(clientManager)
+        // 回调函告诉上一层有新客户端接入
+        addClientCallbackFunc?(clientManager)
         // 开始接收客户端信息
         clientManager.messageLoop()
     }
@@ -175,10 +179,6 @@ class ClientManager: NSObject {
     var username: String = ""
     ///  指向Server对象
     var server: Server?
-    /// 游戏状态
-    var gameState: String = ""
-    /// 对手的客户端管理器
-    var opponent: ClientManager?
     
     
     /// 来自客户端的消息循环（列队异步）
@@ -206,17 +206,18 @@ class ClientManager: NSObject {
     }
     
     /// 发送消息
-    func sendMsg(msg: MSG){
-        // 序列化数据
-        let jsonEncoder = JSONEncoder()
-        if let jsonData=try? jsonEncoder.encode(msg)
-        {
-            // 获得消息长度
-            var len:Int32 = Int32(jsonData.count)
-            var data = Data(bytes: &len, count: 4)
-            data.append(jsonData)
-            // 发送数据（含消息的长度值）
-            _ = self.tcpClient!.send(data: data)
+    func sendMsg(data: Data?){
+        // 数据封装
+        let msg = MSG(cmd: .message, content: data)
+        if let sendData = Server.toSendData(msg: msg){
+            _ = self.tcpClient!.send(data: sendData)
+        }
+    }
+    /// 向客户端发送关闭客户端消息
+    func sendCloseMsg(){
+        let msg = MSG(cmd: .clientClose, content: nil )
+        if let sendData = Server.toSendData(msg: msg){
+            _ = self.tcpClient!.send(data: sendData)
         }
     }
     
@@ -262,14 +263,8 @@ class ClientManager: NSObject {
 struct MSG: Codable {
     /// 命令：“msg” ontent:为通信内容。
     var cmd: Server.CMD
-    var content: String
-    var point: NSPoint?
+    var content: Data?
+
 }
 
-/// 服务器状态数据结构
-struct ServerState {
-    /// 服务器是否开启
-    var stare: Bool
-    /// 服务器状态描述
-    var describe:String
-}
+

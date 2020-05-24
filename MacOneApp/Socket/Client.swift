@@ -16,7 +16,7 @@ class Client: NSObject {
     var tcpClient: TCPClient!
     
     /// 可回调回调NetGame的回调函数
-    var callbackFunc: ((MSG)->())?
+    var callbackFunc: ((Data)->())?
     
     
     /// 启动客户端并链接服务器
@@ -38,26 +38,27 @@ class Client: NSObject {
     /// 断开连接
     func close(){
         // 发消息给服务器已关闭客户端管理
-        self.sendMsg(msg: MSG(cmd: .clientClose, content: "", point: nil))
+        sendCloseMsg()
        
     }
     
     /// 发送消息
-    func sendMsg(msg:MSG){
-          // 序列化数据
-        let jsonEncoder = JSONEncoder()
-        if let jsonData=try? jsonEncoder.encode(msg){
-         
-            // 获得消息长度
-            var len:Int32 = Int32(jsonData.count)
-            var data = Data(bytes: &len, count: 4)
-            // 发送数据（含消息的长度值）
-            data.append(jsonData)
-            _ = self.tcpClient!.send(data: data)
+    func sendMsg(data: Data?){
+        // 数据封装
+        let msg = MSG(cmd: .message, content: data)
+        // 数据转化为可发送的Data
+        if let sendData = Server.toSendData(msg: msg) {
+            _ = self.tcpClient!.send(data: sendData)
         }
-        
-        
     }
+    /// 向服务器发送关闭客户端消息
+    private func sendCloseMsg(){
+        let msg = MSG(cmd: .clientClose, content: nil )
+        if let sendData = Server.toSendData(msg: msg){
+            _ = self.tcpClient!.send(data: sendData)
+        }
+    }
+    
     
     /// 读取消息
     private func readMsg()->MSG?{
@@ -108,13 +109,15 @@ class Client: NSObject {
         
         switch(msg.cmd){
         case .message:
-            callbackFunc?(msg)
-            print("Clent_msg:\(msg.content)")
+            callbackFunc?(msg.content!)
+            print("Clent_msg:\(msg.content!)")
         case .clientClose:
             // 断开连接
             self.tcpClient.close()
             // 让上一层处理
-            callbackFunc?(MSG(cmd:.message, content: "ClientClose", point: nil))
+            let retMsg = NetGame.NetGameMSG(cmd: .stopGame, point: nil)
+            let retData = NetGame.toSendData(msg: retMsg)
+            callbackFunc?(retData!)
             
         default: break
         }

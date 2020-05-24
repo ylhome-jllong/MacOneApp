@@ -11,8 +11,8 @@ import Cocoa
 class NetServerVC: NSViewController {
 
     
-    /// NetGame实例由主VC 初始化
-    var netGame: NetGame?
+    /// NetGameServer 实例
+    var netGameServer = NetGameServer()
     /// 存储父级回调函数
     var callbackFunc: ((String)->())?
     
@@ -25,8 +25,8 @@ class NetServerVC: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do view setup here.
-        serverStateText.stringValue = netGame!.serverState.describe
-        if netGame!.serverState.stare{
+        serverStateText.stringValue = "服务器关闭"
+        if (netGameServer.serverState == .serving){
             openButton.isEnabled = false
             closeButton.isEnabled = true
         }
@@ -45,21 +45,21 @@ class NetServerVC: NSViewController {
     
     /// 服务器开启按钮
     @IBAction func OnOpen(_ sender: Any) {
-        let ss = netGame!.openServer()
-        if (ss.stare){
+        let ss = netGameServer.openServer()
+        if (netGameServer.serverState == .serving){
             openButton.isEnabled = false
             closeButton.isEnabled = true
             self.callbackFunc?("服务器开启")
         }
-        serverStateText.stringValue = ss.describe
+        serverStateText.stringValue = ss
     }
     
     /// 服务器关闭按钮
     @IBAction func OnClose(_ sender: Any) {
         
         
-        netGame!.closeServer()
-        serverStateText.stringValue = netGame!.serverState.describe
+        netGameServer.closeServer()
+        serverStateText.stringValue = "服务器关闭"
         openButton.isEnabled = true
         closeButton.isEnabled = false
         self.callbackFunc?("服务器关闭")

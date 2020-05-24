@@ -22,6 +22,7 @@
 		79B1819C246BB7560011EAB8 /* Checkerboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B1819B246BB7560011EAB8 /* Checkerboard.swift */; };
 		79B1819E246CC80F0011EAB8 /* Piece.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B1819D246CC80E0011EAB8 /* Piece.swift */; };
 		79B181A0246CCCC50011EAB8 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B1819F246CCCC50011EAB8 /* Game.swift */; };
+		79D72C9124797BB700ED5169 /* NetGameServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79D72C9024797BB700ED5169 /* NetGameServer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -56,6 +57,7 @@
 		79B1819B246BB7560011EAB8 /* Checkerboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkerboard.swift; sourceTree = "<group>"; };
 		79B1819D246CC80E0011EAB8 /* Piece.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Piece.swift; sourceTree = "<group>"; };
 		79B1819F246CCCC50011EAB8 /* Game.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
+		79D72C9024797BB700ED5169 /* NetGameServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetGameServer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +94,7 @@
 			isa = PBXGroup;
 			children = (
 				795DF74424738B1700370E9F /* NetGame.swift */,
+				79D72C9024797BB700ED5169 /* NetGameServer.swift */,
 				795DF7462473929700370E9F /* NetServerVC.swift */,
 				796D036E2474E75E00DD3052 /* NetClientVC.swift */,
 			);
@@ -215,6 +218,7 @@
 			files = (
 				796D036F2474E75E00DD3052 /* NetClientVC.swift in Sources */,
 				795DF75724739D5D00370E9F /* Server.swift in Sources */,
+				79D72C9124797BB700ED5169 /* NetGameServer.swift in Sources */,
 				79B1818C246BAE760011EAB8 /* ViewController.swift in Sources */,
 				79B181A0246CCCC50011EAB8 /* Game.swift in Sources */,
 				79B1819A246BB6A40011EAB8 /* MainView.swift in Sources */,
