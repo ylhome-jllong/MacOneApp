@@ -16,10 +16,7 @@ class ViewController: NSViewController {
     var game:Game?
     /// 网络游戏实例
     var netGame: NetGame?
-    /// 网络游戏标志
-    //var netGameFlag = false
-    /// 标志游戏是否开始
-   // var gamePlayFlag = false
+
     
     /// 鼠标按下时收集的数据
     struct MouseData {
@@ -180,6 +177,8 @@ class ViewController: NSViewController {
         }
         
         // 结束游戏
+        // 如果连接了服务器，就断开服务器
+        if(netClientVC!.netGame!.clientState){netClientVC?.OnDisconnect(self)}
         self.game?.stopGame()
         self.mainView.needsDisplay = true
         updateMenu()
@@ -230,22 +229,35 @@ class ViewController: NSViewController {
             self.presentAsSheet(netClientVC!)
         }
     
+    /// VC类信息回调函数消息
+    enum VCCallbackMSG {
+        /// 服务器开启
+        case serverOpen
+        /// 服务器关闭
+        case serverClose
+        /// 连接服务器
+        case linkServer
+        /// 断开服务器
+        case disconnectServer
+        /// 准备开始游戏
+        case readyGame
+    }
     
 
     /// 信息回调函数
-    func callbackFunc(string: String){
-        switch string {
-        case "服务器开启":self.view.window?.title += " - 网络服务开启"
-        case "服务器关闭":
+    func callbackFunc(msg: VCCallbackMSG){
+        switch msg {
+        case .serverOpen:self.view.window?.title += " - 网络服务开启"
+        case .serverClose:
             var str = self.view.window!.title
             let range = str.range(of: " - 网络服务开启")
             str.removeSubrange(range!)
             self.view.window!.title = str
-        case "服务器连接成功":
+        case .linkServer:
             self.view.window?.title += " - 已连接服务器"
-        case "服务器连接断开":
+        case .disconnectServer:
             self.OnCloseGame(nil)
-        case "准备游戏":
+        case .readyGame:
             self.updateMenu()
         default:
             break

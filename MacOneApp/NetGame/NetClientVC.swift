@@ -17,7 +17,7 @@ class NetClientVC: NSViewController {
     /// NetGame 实例
     var netGame: NetGame?
     /// 信息回调函数
-    var callbackFunc: ((String)->())?
+    var callbackFunc: ((ViewController.VCCallbackMSG)->())?
 //    /// 服务器地址
 //    @objc var address: String? = "127.0.0.1" //测试默认值
 //    /// 服务器端口
@@ -55,21 +55,21 @@ class NetClientVC: NSViewController {
         let address = addressText.stringValue
         let port = Int32(portText.stringValue)
         netGame!.linkServer(address: address, port: port!)
-        if( netGame!.clientState){self.callbackFunc?("服务器连接成功")}
+        if( netGame!.clientState){self.callbackFunc?(.linkServer)}
         updateControl()
     }
     
     /// 关联断开服务器按钮
     @IBAction func OnDisconnect(_ sender: Any) {
         netGame?.disconnectServer()
-        if(!netGame!.clientState){self.callbackFunc?("服务器连接断开")}
+        if(!netGame!.clientState){self.callbackFunc?(.disconnectServer)}
         updateControl()
     }
     /// 关联游戏准备按钮
     @IBAction func OnReadyGame(_ sender: Any) {
         self.dismiss(self)
         netGame?.readyGame()
-        if(netGame!.netGameState == .realy){self.callbackFunc?("准备游戏")}
+        if(netGame!.netGameState == .realy){self.callbackFunc?(.readyGame)}
     }
     
     /// 更新控件

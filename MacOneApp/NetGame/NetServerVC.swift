@@ -14,7 +14,7 @@ class NetServerVC: NSViewController {
     /// NetGameServer 实例
     var netGameServer = NetGameServer()
     /// 存储父级回调函数
-    var callbackFunc: ((String)->())?
+    var callbackFunc: ((ViewController.VCCallbackMSG)->())?
     
     
     /// 按钮
@@ -49,7 +49,7 @@ class NetServerVC: NSViewController {
         if (netGameServer.serverState == .serving){
             openButton.isEnabled = false
             closeButton.isEnabled = true
-            self.callbackFunc?("服务器开启")
+            self.callbackFunc?(.serverOpen)
         }
         serverStateText.stringValue = ss
     }
@@ -62,7 +62,7 @@ class NetServerVC: NSViewController {
         serverStateText.stringValue = "服务器关闭"
         openButton.isEnabled = true
         closeButton.isEnabled = false
-        self.callbackFunc?("服务器关闭")
+        self.callbackFunc?(.serverClose)
     }
     
  
