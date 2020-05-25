@@ -36,10 +36,10 @@ class ViewController: NSViewController {
         // Do any additional setup after loading the view.
         // 设置视图的大小
         mainView = self.view as? MainView
-        mainView.setFrameSize(NSMakeSize(800, 800))
+        mainView.setFrameSize(NSMakeSize(1000, 800))
         
         // 初始化游戏
-        game = Game(viewSize: mainView.bounds.size)
+        game = Game(viewSize: NSMakeSize(800,800))
         mainView.game = game
         
         // 初始化网络游戏

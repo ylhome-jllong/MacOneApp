@@ -30,6 +30,10 @@ class Piece: NSObject {
     var position = (x:-1,y:-1)
     /// 对战方
     var team = TeamType.black
+    /// 棋子的大小
+    private(set) var size = NSSize()
+    
+    
     /// nID 棋子ID号，type:棋子的种类，position:棋子位置，team: 棋子颜色，size:棋子大小
     init(nID: Int,type: PieceType,position: (Int,Int),team: TeamType,size: NSSize){
         self.nID = nID
@@ -44,6 +48,7 @@ class Piece: NSObject {
     
     /// 初始化棋子图像
     func initImage(size: NSSize) {
+        self.size = size
         pieceImage = NSImage(size: size, flipped: true){
             (rect) -> Bool
             in

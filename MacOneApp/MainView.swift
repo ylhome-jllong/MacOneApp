@@ -23,8 +23,9 @@ class MainView: NSView {
         // 游戏已经开始
         if(game!.gameState){
             // 绘制棋盘
-            game?.checkerboard.boardImage?.draw(in: self.bounds)
-            
+            let width = game!.checkerboard.boardSize!.width
+            let height = game!.checkerboard.boardSize!.height
+            game?.checkerboard.boardImage?.draw(at: NSMakePoint(0, 0), from: CGRect(x: 0, y: 0, width: width, height: height), operation: .copy, fraction: 100)
             // 绘制棋子
             for x in 0...8{
                 for y in 0...9{
@@ -51,17 +52,24 @@ class MainView: NSView {
     
     /// 红黑对战坐标转换，事先要设置reversal，false为黑对红 ture 为红对黑
     func reversalCoordinate(_ oldPoint: NSPoint) ->NSPoint{
-        // 红对黑
+        let size = self.game!.checkerboard.boardSize!
+        var newPoint = oldPoint
+        let r = game!.checkerboard.pieceSize.width/2
+        
+        
+        // 位置限制
+        if (newPoint.x<r){newPoint.x = r}
+        else if (newPoint.x > size.width-r){newPoint.x = size.width - r}
+        if (newPoint.y<r){newPoint.y = r}
+        else if (newPoint.y > size.height-r){newPoint.y = size.height - r}
+        
+        // 红对黑坐标转置
         if(reversal){
-            var newPoint = NSPoint(x: 0,y: 0)
-            let size = self.frame.size
-            newPoint.x = abs(oldPoint.x - size.width)
-            newPoint.y = abs(oldPoint.y - size.height)
-            return newPoint
+            newPoint.x = abs(newPoint.x - size.width)
+            newPoint.y = abs(newPoint.y - size.height)
         }
-        else{// 黑对红
-            return oldPoint
-        }
+    
+        return newPoint
     }
     
 }

@@ -25,6 +25,9 @@ class Game: NSObject {
     /// 提起的棋子
     var raisePiece: RaisePiece?
     
+    
+    
+    
     /// 规则返回值
     enum RuleRet {
         /// 可以移动
@@ -126,7 +129,7 @@ class Game: NSObject {
 //========== 私有方法 ====================================================================
     /// 生成棋子
     private func generatePieces(){
-        let size = NSSize(width: 50, height: 50)
+        let size = checkerboard.pieceSize
         checkerboard.pieces[0][0] = Piece(nID: 0, type:.車, position: (0,0),team: .black, size: size)
         checkerboard.pieces[1][0] = Piece(nID: 1, type:.馬,position: (1,0), team: .black, size: size)
         checkerboard.pieces[2][0] = Piece(nID: 2, type:.象, position: (2,0),team: .black, size: size)

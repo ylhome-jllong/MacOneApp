@@ -19,6 +19,8 @@ class Checkerboard: NSObject {
     var grid = [[NSPoint]]()  //数组的定义方式
     /// 旗子容器
     var pieces: [[Piece?]]!   // 可选型数组
+    /// 棋子的大小
+    private(set) var pieceSize = NSSize()
     
     /// 棋子容器初始化
     func initPieces() {
@@ -36,6 +38,9 @@ class Checkerboard: NSObject {
     /// 初始化棋盘
     func initBoard(boardSize: NSSize){
         self.boardSize = boardSize
+        
+        // 设置棋子的大小
+        self.pieceSize = NSSize(width: 50, height: 50)
         
         // 计算间隔
         let jianGe_y = boardSize.height/11
@@ -135,7 +140,7 @@ class Checkerboard: NSObject {
     /// 获得点击位置的棋子
     func getPiece(_ point: NSPoint ) -> Piece?{
         var piece:Piece?
-        let r: CGFloat = 25.0
+        let r = pieceSize.width/2
         // 寻找可能的棋子
         for x in 0...8{
             for y in 0...9{
@@ -153,7 +158,7 @@ class Checkerboard: NSObject {
     
     /// 获得可放棋子的位置  没有找到返回-1
     func getPosition(_ point: NSPoint) -> (x: Int,y: Int){
-        let r: CGFloat = 25.0
+        let r = pieceSize.width/2
         
         // 寻找附近可以放置棋子的位置
         for x in 0...8{
