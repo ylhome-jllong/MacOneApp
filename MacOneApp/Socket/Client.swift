@@ -15,8 +15,8 @@ class Client: NSObject {
     /// 指向TCPClient对象TCPClient
     var tcpClient: TCPClient!
     
-    /// 可回调回调NetGame的回调函数
-    var callbackFunc: ((Data)->())?
+    /// 事件处理代理
+    var delegate: ClientProtocol?
     
     
     /// 启动客户端并链接服务器
@@ -109,7 +109,7 @@ class Client: NSObject {
         
         switch(msg.cmd){
         case .message:
-            callbackFunc?(msg.content!)
+            delegate?.msgArrive(data: msg.content!)
             print("Clent_msg:\(msg.content!)")
         case .clientClose:
             // 断开连接
@@ -117,8 +117,14 @@ class Client: NSObject {
             // 让上一层处理
             let retMsg = NetGame.NetGameMSG(cmd: .stopGame, point: nil)
             let retData = NetGame.toSendData(msg: retMsg)
-            callbackFunc?(retData!)
+            delegate?.msgArrive(data: retData!)
         }
     }
 
+}
+
+/// Client事件委托协议
+protocol ClientProtocol {
+    /// 有消息到达委托处理
+    func msgArrive(data: Data)
 }

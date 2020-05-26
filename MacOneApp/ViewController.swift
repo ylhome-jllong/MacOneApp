@@ -44,17 +44,8 @@ class ViewController: NSViewController {
         
         // 初始化网络游戏
         netGame = NetGame()
-        netGame?.game = game
-        netGame?.OnNew = self.OnNew
-        netGame?.OnNewPlus = self.OnNewPlus
-        
-        netGame?.OnCloseGame = self.OnCloseGame
-        
-        
-        netGame?.mouseDown = self.mouseDown
-        netGame?.mouseDragged = self.mouseDragged
-        netGame?.mouseUp = self.mouseUp
-
+        // 设置netGame事件处理代理
+        netGame?.delegate = self
         
     }
 
@@ -283,4 +274,7 @@ class ViewController: NSViewController {
           
     }
 }
+
+///扩展NetGameProtocol协议
+extension ViewController: NetGameProtocol{}
 

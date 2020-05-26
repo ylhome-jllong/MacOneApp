@@ -50,12 +50,15 @@ class Server: NSObject {
     /// 服务器IP
     private(set) var serverIP = ""
     
-    /// 有新客户端接入时回调函数
-    var addClientCallbackFunc: ((ClientManager)->())?
-    /// 有客户端断开时回调函数
-    var delClientCallbackFunc: ((ClientManager)->())?
-    /// 有消息到达客户端时回调函数
-    var msgArriveCallBackFunc:((ClientManager,Data)->())?
+    /// 委托处理事件的代理
+    var delegate: ServerProtocol?
+    
+//    /// 有新客户端接入时回调函数
+//    var addClientCallbackFunc: ((ClientManager)->())?
+//    /// 有客户端断开时回调函数
+//    var delClientCallbackFunc: ((ClientManager)->())?
+//    /// 有消息到达客户端时回调函数
+//    var msgArriveCallBackFunc:((ClientManager,Data)->())?
     
     
     /// 转化为可发送的数据（类函数）
@@ -131,7 +134,7 @@ class Server: NSObject {
     ///  移除客户端
     func remove(_ clientMangager: ClientManager){
         // 客户端断开回调
-        delClientCallbackFunc?(clientMangager)
+        delegate?.delClient(clientManager: clientMangager)
         
         if let possibleIndex=self.clientManagers.firstIndex(of: clientMangager){
             clientManagers.remove(at: possibleIndex)
@@ -148,7 +151,7 @@ class Server: NSObject {
         // 消息处理
         switch msg.cmd {
         case .message:// 消息到达传到上层处理
-            msgArriveCallBackFunc?(clientManager,msg.content!)
+            delegate?.msgArrive(clientManager: clientManager, data: msg.content!)
         case .clientClose:// 关闭客户端连接
             remove(clientManager)
         }
@@ -167,7 +170,7 @@ class Server: NSObject {
         // 加入客户端管理列表
         clientManagers.append(clientManager)
         // 回调函告诉上一层有新客户端接入
-        addClientCallbackFunc?(clientManager)
+        delegate?.addClient(clientManager: clientManager)
         // 开始接收客户端信息
         clientManager.messageLoop()
     }
@@ -265,5 +268,12 @@ class ClientManager: NSObject {
 }
 
 
-
-
+/// Socket Server 委托处理协议
+protocol ServerProtocol {
+    /// 有新客户端接入时委托处理
+    func addClient(clientManager: ClientManager)
+    /// 有客户端断开时委托处理
+    func delClient(clientManager: ClientManager)
+    /// 有消息到达时委托处理
+    func msgArrive(clientManager: ClientManager,data: Data)
+}

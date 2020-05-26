@@ -9,7 +9,7 @@
 import Cocoa
 import SwiftSocket
 /// 网络游戏处理类
-class NetGame: NSObject {
+class NetGame: NSObject,ClientProtocol {
     
     /// 网络游戏层网络消息结构
     struct NetGameMSG: Codable {
@@ -54,15 +54,10 @@ class NetGame: NSObject {
         case free
     }
     
+    /// 委托处理相关事件
+    var delegate: NetGameProtocol?
     
-    var OnNew: ((Any?)->())?
-    var OnNewPlus: ((Any?)->())?
-    var OnCloseGame: ((Any?)->())?
-    var mouseDown: ((NSPoint)->())?
-    var mouseDragged: ((NSPoint)->())?
-    var mouseUp:((NSPoint)->())?
-    
-    
+
     
     /// 数据解码
     static func toNetGameMSG(data:Data) -> NetGameMSG?{
@@ -86,7 +81,7 @@ class NetGame: NSObject {
     
     /// 连接服务器
     func linkServer(address: String, port: Int32) {
-        client.callbackFunc = self.callbackFunc
+        client.delegate = self
         clientState = client.startClient(address: address, port: port)
     }
     
@@ -106,23 +101,23 @@ class NetGame: NSObject {
     }
     
     
-    
+//========== ClientProtocol 协议实现======================================
     /// Socket_Client 回调消息处理
-    func callbackFunc(data: Data){
+    func msgArrive(data: Data) {
         // 解码数据
         if let msg = Self.toNetGameMSG(data: data){
             // 回主线程运行
             DispatchQueue.main.async {
                 switch msg.cmd {
-                case .play1:self.myTeam = .black;self.OnNew?(nil);self.netGameState = .play
-                case .play2:self.myTeam = .red;self.OnNewPlus?(nil);self.netGameState = .play
-                case .mouseDown:self.mouseDown?(msg.point!)
-                case .mouseDragged:self.mouseDragged?(msg.point!)
-                case .mouseUp:self.mouseUp?(msg.point!)
+                case .play1:self.myTeam = .black;self.delegate?.OnNew(nil);self.netGameState = .play
+                case .play2:self.myTeam = .red;self.delegate?.OnNewPlus(nil);self.netGameState = .play
+                case .mouseDown:self.delegate?.mouseDown(point: msg.point!)
+                case .mouseDragged:self.delegate?.mouseDragged(point: msg.point!)
+                case .mouseUp:self.delegate?.mouseUp(point: msg.point!)
                 // 现在也不知道它要做什么
                 case .ready:break
                 // 被动断开服务器
-                case .stopGame:self.clientState = false;self.netGameState = .free;self.OnCloseGame?(nil)
+                case .stopGame:self.clientState = false;self.netGameState = .free;self.delegate?.OnCloseGame(nil)
                 }
             }
         }
@@ -155,4 +150,19 @@ class NetGame: NSObject {
 }
 
 
+/// 网络游戏类委托协议
+protocol NetGameProtocol {
+    /// 新建黑对红委托处理
+    func OnNew(_ sender: Any?)
+    /// 新建红对黑委托处理
+    func OnNewPlus(_ sender: Any?)
+    /// 关闭游戏委托处理
+    func OnCloseGame(_ sender: Any?)
+    /// 鼠标按下事件委托处理
+    func mouseDown(point: NSPoint)
+    /// 鼠标弹起事件委托处理
+    func mouseUp(point: NSPoint)
+    /// 鼠标拖动委托处理
+    func mouseDragged(point: NSPoint)
+}
 

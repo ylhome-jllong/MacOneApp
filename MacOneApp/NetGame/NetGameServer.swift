@@ -14,7 +14,8 @@
 import Cocoa
 
 /// 网络游戏服务器
-class NetGameServer: NSObject {
+class NetGameServer: NSObject,ServerProtocol {
+    
     
     
     /// 服务器实例
@@ -53,10 +54,8 @@ class NetGameServer: NSObject {
         else{
             // 测试默认使用127.0.0.1：3200
             serverState = server.stat(address: "127.0.0.1", port: 3200)
-            // 设置socket回调函数
-            server.addClientCallbackFunc = self.addPlayerCallbackFunc
-            server.delClientCallbackFunc = self.delPlayerCallbackFunc
-            server.msgArriveCallBackFunc = self.msgArriveServer
+            // 设置socket的事件代理
+            server.delegate = self
             return server.serverIP
         }
     }
@@ -101,33 +100,6 @@ class NetGameServer: NSObject {
     }
     
     
-    /// 有新玩家接入服务器，Socket回调函
-    func addPlayerCallbackFunc(clientManager: ClientManager){
-        let gamePlayer = GamePlayer(clientManager: clientManager , opponent: nil, gameState: .free)
-        // 加入玩家列表
-        gamePlayers.append(gamePlayer)
-        notifyDelegate?.addGamePlayer()
-    }
-    /// 有玩家退出服务器，Socket回调函数
-    func delPlayerCallbackFunc(clientManager: ClientManager){
-        for index in 0...gamePlayers.endIndex {
-            // 寻找玩家列表中的位置
-            if(gamePlayers[index].clientManager == clientManager){
-                // 如果有手玩家也通知他推出
-                if let opponent = gamePlayers[index].opponent{opponent.clientManager.sendCloseMsg()}
-                // 删除列表中的玩家
-                gamePlayers.remove(at: index)
-                notifyDelegate?.delGamePlayer()
-                // 跳出
-                break
-            }
-        }
-    }
-    /// 有消息到达服务器（消息转发）
-    func msgArriveServer(clientManager: ClientManager,data: Data){
-        processMsg(clientManager: clientManager, data: data)
-    }
-    
     /// 消息处理
     private func processMsg(clientManager: ClientManager,data: Data)  {
         //消息解码
@@ -155,8 +127,39 @@ class NetGameServer: NSObject {
         return nil
     }
     
+//========== 协议实现 ======================================================================
+    /// 有新玩家接入服务器，Socket回调函
+    func addClient(clientManager: ClientManager) {
+        let gamePlayer = GamePlayer(clientManager: clientManager , opponent: nil, gameState: .free)
+        // 加入玩家列表
+        gamePlayers.append(gamePlayer)
+        notifyDelegate?.addGamePlayer()
+    }
+    /// 有玩家退出服务器，Socket回调函数
+    func delClient(clientManager: ClientManager) {
+        for index in 0...gamePlayers.endIndex {
+            // 寻找玩家列表中的位置
+            if(gamePlayers[index].clientManager == clientManager){
+                // 如果有手玩家也通知他推出
+                if let opponent = gamePlayers[index].opponent{opponent.clientManager.sendCloseMsg()}
+                // 删除列表中的玩家
+                gamePlayers.remove(at: index)
+                notifyDelegate?.delGamePlayer()
+                // 跳出
+                break
+            }
+        }
+    }
+    /// 有消息到达服务器（消息转发）
+    func msgArrive(clientManager: ClientManager, data: Data) {
+        processMsg(clientManager: clientManager, data: data)
+    }
+    
+    
+    
 }
 
+/// NetGameServer类事件委托协议
 protocol NetGameServerProtocol {
     /// 有玩家加入时触发
     func addGamePlayer()
