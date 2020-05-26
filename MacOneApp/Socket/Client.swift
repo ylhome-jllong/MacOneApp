@@ -112,12 +112,13 @@ class Client: NSObject {
             delegate?.msgArrive(data: msg.content!)
             print("Clent_msg:\(msg.content!)")
         case .clientClose:
+            // 通知服务器断开
+            self.sendCloseMsg()
             // 断开连接
             self.tcpClient.close()
             // 让上一层处理
-            let retMsg = NetGame.NetGameMSG(cmd: .stopGame, point: nil)
-            let retData = NetGame.toSendData(msg: retMsg)
-            delegate?.msgArrive(data: retData!)
+            delegate?.msgClienClose()
+
         }
     }
 
@@ -127,4 +128,6 @@ class Client: NSObject {
 protocol ClientProtocol {
     /// 有消息到达委托处理
     func msgArrive(data: Data)
+    /// 收到关闭客户端委托处理
+    func msgClienClose()
 }

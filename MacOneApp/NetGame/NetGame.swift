@@ -10,7 +10,7 @@ import Cocoa
 import SwiftSocket
 /// 网络游戏处理类
 class NetGame: NSObject,ClientProtocol {
-    
+
     /// 网络游戏层网络消息结构
     struct NetGameMSG: Codable {
         /// 网络游戏层命令
@@ -32,8 +32,6 @@ class NetGame: NSObject,ClientProtocol {
         case mouseDown
         /// 鼠标弹起
         case mouseUp
-        /// 游戏关闭
-        case stopGame
     }
     
     
@@ -116,14 +114,19 @@ class NetGame: NSObject,ClientProtocol {
                 case .mouseUp:self.delegate?.mouseUp(point: msg.point!)
                 // 现在也不知道它要做什么
                 case .ready:break
-                // 被动断开服务器
-                case .stopGame:self.clientState = false;self.netGameState = .free;self.delegate?.OnCloseGame(nil)
                 }
             }
         }
        
     }
-    
+    /// 收到关闭客户端消息时处理
+    func msgClienClose() {
+        DispatchQueue.main.async {
+            self.clientState = false
+            self.netGameState = .free
+            self.delegate?.OnCloseGame(nil)
+        }
+    }
     
     
     /// 网络发布鼠标按下

@@ -141,7 +141,11 @@ class NetGameServer: NSObject,ServerProtocol {
             // 寻找玩家列表中的位置
             if(gamePlayers[index].clientManager == clientManager){
                 // 如果有手玩家也通知他推出
-                if let opponent = gamePlayers[index].opponent{opponent.clientManager.sendCloseMsg()}
+                if let opponent = gamePlayers[index].opponent{
+                    opponent.clientManager.sendCloseMsg()
+                    // 删除对对战端中的自己
+                    opponent.opponent = nil
+                }
                 // 删除列表中的玩家
                 gamePlayers.remove(at: index)
                 notifyDelegate?.delGamePlayer()
