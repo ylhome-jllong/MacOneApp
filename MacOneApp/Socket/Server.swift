@@ -31,6 +31,13 @@ class Server: NSObject {
         /// 关闭
         case shutdown
     }
+    // 通信的信息包 满足可转换协议
+    struct MSG: Codable {
+        /// 命令：“msg” ontent:为通信内容。
+        var cmd: Server.CMD
+        var content: Data?
+
+    }
 
     
  
@@ -206,14 +213,14 @@ class ClientManager: NSObject {
     /// 发送消息
     func sendMsg(data: Data?){
         // 数据封装
-        let msg = MSG(cmd: .message, content: data)
+        let msg = Server.MSG(cmd: .message, content: data)
         if let sendData = Server.toSendData(msg: msg){
             _ = self.tcpClient!.send(data: sendData)
         }
     }
     /// 向客户端发送关闭客户端消息
     func sendCloseMsg(){
-        let msg = MSG(cmd: .clientClose, content: nil )
+        let msg = Server.MSG(cmd: .clientClose, content: nil )
         if let sendData = Server.toSendData(msg: msg){
             _ = self.tcpClient!.send(data: sendData)
         }
@@ -221,7 +228,7 @@ class ClientManager: NSObject {
     
     
     /// 读取客户端消息
-    private func readMsg()->MSG?{
+    private func readMsg()->Server.MSG?{
         // 读4个字节（信息头，后面内容的长度）
         if let data=self.tcpClient!.read(4){
             if data.count == 4{
@@ -234,7 +241,7 @@ class ClientManager: NSObject {
                     let msgd = Data(bytes: buff, count: buff.count)
                     // 反序列化数据
                     let jsonDecoder = JSONDecoder()
-                    guard let msgi = try? jsonDecoder.decode(MSG.self, from: msgd)else{
+                    guard let msgi = try? jsonDecoder.decode(Server.MSG.self, from: msgd)else{
                         let jsonString = String(data: msgd,encoding: .utf8)
                             print("Socket CM Err jsonData \(jsonString!)")
                             return nil
@@ -251,18 +258,12 @@ class ClientManager: NSObject {
   
     
     //处理收到的消息
-    private func processMsg(msg:MSG){
+    private func processMsg(msg:Server.MSG){
         server!.processClientMsg(clientManager: self, msg: msg)
     }
 
 }
 
-// 通信的信息包 满足可转换协议
-struct MSG: Codable {
-    /// 命令：“msg” ontent:为通信内容。
-    var cmd: Server.CMD
-    var content: Data?
 
-}
 
 

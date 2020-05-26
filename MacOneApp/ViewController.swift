@@ -259,8 +259,6 @@ class ViewController: NSViewController {
             self.OnCloseGame(nil)
         case .readyGame:
             self.updateMenu()
-        default:
-            break
         }
      }
     func updateMenu(){

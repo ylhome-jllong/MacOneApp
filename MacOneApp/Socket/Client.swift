@@ -45,7 +45,7 @@ class Client: NSObject {
     /// 发送消息
     func sendMsg(data: Data?){
         // 数据封装
-        let msg = MSG(cmd: .message, content: data)
+        let msg = Server.MSG(cmd: .message, content: data)
         // 数据转化为可发送的Data
         if let sendData = Server.toSendData(msg: msg) {
             _ = self.tcpClient!.send(data: sendData)
@@ -53,7 +53,7 @@ class Client: NSObject {
     }
     /// 向服务器发送关闭客户端消息
     private func sendCloseMsg(){
-        let msg = MSG(cmd: .clientClose, content: nil )
+        let msg = Server.MSG(cmd: .clientClose, content: nil )
         if let sendData = Server.toSendData(msg: msg){
             _ = self.tcpClient!.send(data: sendData)
         }
@@ -61,7 +61,7 @@ class Client: NSObject {
     
     
     /// 读取消息
-    private func readMsg()->MSG?{
+    private func readMsg()->Server.MSG?{
         // 读4个字节（信息头，后面内容的长度）
         if let data = self.tcpClient!.read(4){
             if data.count == 4{
@@ -74,7 +74,7 @@ class Client: NSObject {
                     let msgd = Data(bytes: buff, count: buff.count)
                     // 反序列化数据
                     let jsonDecoder = JSONDecoder()
-                    guard let msgi = try? jsonDecoder.decode(MSG.self, from: msgd)else{
+                    guard let msgi = try? jsonDecoder.decode(Server.MSG.self, from: msgd)else{
                         let jsonString = String(data: msgd,encoding: .utf8)
                         print("Socket Client Err jsonData \(jsonString!)")
                         return nil
@@ -105,7 +105,7 @@ class Client: NSObject {
     }
    
     //处理消息
-    private func processMessage(msg:MSG){
+    private func processMessage(msg:Server.MSG){
         
         switch(msg.cmd){
         case .message:
