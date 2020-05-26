@@ -118,8 +118,6 @@ class Client: NSObject {
             let retMsg = NetGame.NetGameMSG(cmd: .stopGame, point: nil)
             let retData = NetGame.toSendData(msg: retMsg)
             callbackFunc?(retData!)
-            
-        default: break
         }
     }
 

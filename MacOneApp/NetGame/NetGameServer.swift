@@ -29,6 +29,10 @@ class NetGameServer: NSObject {
         var opponent: GamePlayer?
         /// 现在的游戏状态
         var gameState: NetGame.NetGameState
+        /// 对战组
+        var group = -1
+        
+        ///
         init(clientManager: ClientManager,opponent: GamePlayer?,gameState: NetGame.NetGameState){
             self.clientManager = clientManager
             self.opponent = opponent
@@ -36,9 +40,10 @@ class NetGameServer: NSObject {
         }
     }
     /// 已连接服务器的游戏玩家
-    private var gamePlayers = [GamePlayer]()
+    private(set) var gamePlayers = [GamePlayer]()
     
-    
+    /// 通知代理协议（有相关变化时通知上一级处理）
+    var notifyDelegate: NetGameServerProtocol?
     
     
 //========== 服务器工作 ========================================================================
@@ -79,12 +84,18 @@ class NetGameServer: NSObject {
                 let sendData2 = NetGame.toSendData(msg: NetGame.NetGameMSG(cmd: .play2, point: nil))
                 gamePlayer!.clientManager.sendMsg(data: sendData1)
                 gamePlayer2.clientManager.sendMsg(data: sendData2)
+                
+                // 随机产生对战组号
+                gamePlayer!.group = Int(arc4random())
+                gamePlayer2.group = gamePlayer!.group
     
                 print("Server: 客户端配对成功\(gamePlayer!.clientManager.tcpClient!.address)--\(gamePlayer2.clientManager.tcpClient!.address)")
-                    return
-                }
+                self.notifyDelegate?.gamePlayerReady()
+                return
             }
+        }
         gamePlayer!.gameState = .realy
+        self.notifyDelegate?.gamePlayerReady()
         print("Server: 客户端ready\(gamePlayer!.clientManager.tcpClient!.address)")
     
     }
@@ -94,9 +105,10 @@ class NetGameServer: NSObject {
     func addPlayerCallbackFunc(clientManager: ClientManager){
         let gamePlayer = GamePlayer(clientManager: clientManager , opponent: nil, gameState: .free)
         // 加入玩家列表
-        gamePlayers.append(gamePlayer)        
+        gamePlayers.append(gamePlayer)
+        notifyDelegate?.addGamePlayer()
     }
-    /// 有玩家推出服务器，Socket回调函数
+    /// 有玩家退出服务器，Socket回调函数
     func delPlayerCallbackFunc(clientManager: ClientManager){
         for index in 0...gamePlayers.endIndex {
             // 寻找玩家列表中的位置
@@ -105,6 +117,7 @@ class NetGameServer: NSObject {
                 if let opponent = gamePlayers[index].opponent{opponent.clientManager.sendCloseMsg()}
                 // 删除列表中的玩家
                 gamePlayers.remove(at: index)
+                notifyDelegate?.delGamePlayer()
                 // 跳出
                 break
             }
@@ -142,6 +155,14 @@ class NetGameServer: NSObject {
         return nil
     }
     
-    
+}
 
+protocol NetGameServerProtocol {
+    /// 有玩家加入时触发
+    func addGamePlayer()
+    /// 有玩家退出时触发
+    func delGamePlayer()
+    /// 有玩家准游戏时触发
+    func gamePlayerReady()
+    
 }

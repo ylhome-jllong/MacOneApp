@@ -8,15 +8,15 @@
 
 import Cocoa
 
-class NetServerVC: NSViewController {
-
-    
+class NetServerVC: NSViewController,NetGameServerProtocol{
+  
     /// NetGameServer 实例
     var netGameServer = NetGameServer()
     /// 存储父级回调函数
     var callbackFunc: ((ViewController.VCCallbackMSG)->())?
     
     
+    @IBOutlet weak var clinetTableView: NSTableView!
     /// 按钮
     @IBOutlet weak var openButton: NSButton!
     @IBOutlet weak var closeButton: NSButton!
@@ -34,6 +34,12 @@ class NetServerVC: NSViewController {
             openButton.isEnabled = true
             closeButton.isEnabled = false
         }
+        
+        // 设置网络游戏服务器通知代理
+        netGameServer.notifyDelegate = self
+        // 设置数据列表代理
+        clinetTableView.delegate = self
+        clinetTableView.dataSource = self
     }
     
     
@@ -65,7 +71,54 @@ class NetServerVC: NSViewController {
         self.callbackFunc?(.serverClose)
     }
     
- 
+    /// 数据列表数据行确定
+    func numberOfRows(in tableView: NSTableView) -> Int {
+        return netGameServer.gamePlayers.count
+    }
+    
+    /// 数据列表数据绑定
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        var newView: NSTableCellView?
+        switch tableColumn?.identifier.rawValue {
+        case "Name":
+            newView = tableView.makeView(withIdentifier: .init("Name"), owner: nil) as? NSTableCellView
+            newView?.textField?.stringValue = "\(row+1)号用户"
+        case "IP":
+            newView = tableView.makeView(withIdentifier: .init("IP"), owner: nil) as? NSTableCellView
+            newView?.textField?.stringValue = self.netGameServer.gamePlayers[row].clientManager.tcpClient!.address
+        case "Port":
+            newView = tableView.makeView(withIdentifier: .init("Port"), owner: nil) as? NSTableCellView
+            newView?.textField?.stringValue = "\( self.netGameServer.gamePlayers[row].clientManager.tcpClient!.port)"
+        case "Group":
+            newView = tableView.makeView(withIdentifier: .init("Port"), owner: nil) as? NSTableCellView
+            newView?.textField?.stringValue = "\( self.netGameServer.gamePlayers[row].group)"
+        default:
+            newView = nil
+        }
+        return newView
+    }
+    // 更新列表
+    func updateView(){
+        DispatchQueue.main.async {
+            self.clinetTableView.reloadData()
+        }
+    }
+    
+//======== NetGameServerProtocol 协议实现============================================
+   
+  func addGamePlayer() {
+       updateView()
+   }
+   
+   func delGamePlayer() {
+       updateView()
+   }
+   
+   func gamePlayerReady() {
+       updateView()
+   }
     
     
 }
+
+extension NetServerVC: NSTableViewDelegate,NSTableViewDataSource{}

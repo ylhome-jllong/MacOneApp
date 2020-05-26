@@ -175,10 +175,8 @@ class Server: NSObject {
 class ClientManager: NSObject {
     /// 指向tcpClient 对象
     var tcpClient: TCPClient?
-    /// 客户端名字
-    var username: String = ""
     ///  指向Server对象
-    var server: Server?
+   var server: Server?
     
     
     /// 来自客户端的消息循环（列队异步）
