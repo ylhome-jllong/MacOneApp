@@ -63,7 +63,8 @@ class Checkerboard: NSObject {
             in
             NSColor.white.set()
             rect.fill()
-            return true}
+            return true
+        }
         
         // 画网格线
         let path = NSBezierPath()
