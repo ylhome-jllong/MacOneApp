@@ -46,6 +46,7 @@ class ViewController: NSViewController {
         netGame = NetGame()
         // 设置netGame事件处理代理
         netGame?.delegate = self
+        netGame?.game = game
         
     }
 

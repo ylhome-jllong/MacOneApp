@@ -53,13 +53,6 @@ class Server: NSObject {
     /// 委托处理事件的代理
     var delegate: ServerProtocol?
     
-//    /// 有新客户端接入时回调函数
-//    var addClientCallbackFunc: ((ClientManager)->())?
-//    /// 有客户端断开时回调函数
-//    var delClientCallbackFunc: ((ClientManager)->())?
-//    /// 有消息到达客户端时回调函数
-//    var msgArriveCallBackFunc:((ClientManager,Data)->())?
-    
     
     /// 转化为可发送的数据（类函数）
     static func toSendData(msg: MSG)->Data?{
@@ -109,7 +102,7 @@ class Server: NSObject {
                     // 有正确的客户端接入新建线与他沟通
                     if (tcpClient != nil){
                         self.handleClient(tcpClient!)
-                        print("客户端 \(tcpClient!.address):\(tcpClient!.port)")
+                        //print("客户端 \(tcpClient!.address):\(tcpClient!.port)")
                     }
                 }
             }

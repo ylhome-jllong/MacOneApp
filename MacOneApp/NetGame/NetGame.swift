@@ -104,14 +104,16 @@ class NetGame: NSObject,ClientProtocol {
     func msgArrive(data: Data) {
         // 解码数据
         if let msg = Self.toNetGameMSG(data: data){
+            var localPoint=CGPoint(x: 0, y: 0)
+            if (msg.point != nil) {localPoint = toLocalLPoint(msg.point!)}
             // 回主线程运行
             DispatchQueue.main.async {
                 switch msg.cmd {
                 case .play1:self.myTeam = .black;self.delegate?.OnNew(nil);self.netGameState = .play
                 case .play2:self.myTeam = .red;self.delegate?.OnNewPlus(nil);self.netGameState = .play
-                case .mouseDown:self.delegate?.mouseDown(point: msg.point!)
-                case .mouseDragged:self.delegate?.mouseDragged(point: msg.point!)
-                case .mouseUp:self.delegate?.mouseUp(point: msg.point!)
+                case .mouseDown:self.delegate?.mouseDown(point: localPoint)
+                case .mouseDragged:self.delegate?.mouseDragged(point: localPoint)
+                case .mouseUp:self.delegate?.mouseUp(point: localPoint)
                 // 现在也不知道它要做什么
                 case .ready:break
                 }
@@ -131,24 +133,49 @@ class NetGame: NSObject,ClientProtocol {
     
     /// 网络发布鼠标按下
     func netMouseDown(point: NSPoint){
-        if let sendData = Self.toSendData(msg: NetGameMSG(cmd: .mouseDown, point: point)){
+        let netPoint = toNetGamePoint(point)
+        if let sendData = Self.toSendData(msg: NetGameMSG(cmd: .mouseDown, point: netPoint)){
             client.sendMsg(data: sendData)
         }
         
     }
     /// 网络发布鼠标拖动
     func netMouseDragged(point: NSPoint){
-        if let sendData = Self.toSendData(msg: NetGameMSG(cmd: .mouseDragged, point: point)){
+         let netPoint = toNetGamePoint(point)
+        if let sendData = Self.toSendData(msg: NetGameMSG(cmd: .mouseDragged, point: netPoint)){
              client.sendMsg(data: sendData)
         }
         
     }
     /// 网络发布鼠标弹起
     func netMouseUp(point: NSPoint){
-        if let sendData = Self.toSendData(msg: NetGameMSG(cmd: .mouseUp, point: point)){
+        let netPoint = toNetGamePoint(point)
+        if let sendData = Self.toSendData(msg: NetGameMSG(cmd: .mouseUp, point: netPoint)){
             client.sendMsg(data: sendData)
         }
     }
+    
+    
+    /// 转化为相对坐标用于网络传输
+    private func toNetGamePoint(_ oldPoint: CGPoint)->CGPoint{
+        var newPoint = CGPoint(x: 0.0, y: 0.0)
+        newPoint.x = oldPoint.x/game!.checkerboard.boardSize!.width
+        newPoint.y = oldPoint.y/game!.checkerboard.boardSize!.height
+        return newPoint
+    }
+    /// 坐标转换回本机坐标
+    private func toLocalLPoint(_ oldPoint: CGPoint)->CGPoint{
+        var newPoint = CGPoint(x: 0.0, y: 0.0)
+        newPoint.x = oldPoint.x*game!.checkerboard.boardSize!.width
+        newPoint.y = oldPoint.y*game!.checkerboard.boardSize!.height
+        return newPoint
+        
+    }
+    
+    
+    
+    
+    
 
 }
 

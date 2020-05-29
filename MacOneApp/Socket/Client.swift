@@ -110,7 +110,7 @@ class Client: NSObject {
         switch(msg.cmd){
         case .message:
             delegate?.msgArrive(data: msg.content!)
-            print("Clent_msg:\(msg.content!)")
+           // print("Clent_msg:\(msg.content!)")
         case .clientClose:
             // 通知服务器断开
             self.sendCloseMsg()
