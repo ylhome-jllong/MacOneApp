@@ -23,6 +23,7 @@
 		79B1819E246CC80F0011EAB8 /* Piece.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B1819D246CC80E0011EAB8 /* Piece.swift */; };
 		79B181A0246CCCC50011EAB8 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B1819F246CCCC50011EAB8 /* Game.swift */; };
 		79D72C9124797BB700ED5169 /* NetGameServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79D72C9024797BB700ED5169 /* NetGameServer.swift */; };
+		79E62C972480E80A00FD6C6D /* GetIPAddresses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E62C962480E80A00FD6C6D /* GetIPAddresses.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -58,6 +59,7 @@
 		79B1819D246CC80E0011EAB8 /* Piece.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Piece.swift; sourceTree = "<group>"; };
 		79B1819F246CCCC50011EAB8 /* Game.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
 		79D72C9024797BB700ED5169 /* NetGameServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetGameServer.swift; sourceTree = "<group>"; };
+		79E62C962480E80A00FD6C6D /* GetIPAddresses.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GetIPAddresses.swift; path = MacOneApp/Socket/GetIPAddresses.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +85,7 @@
 		795DF74F24739CA700370E9F /* Socket */ = {
 			isa = PBXGroup;
 			children = (
+				79E62C962480E80A00FD6C6D /* GetIPAddresses.swift */,
 				795DF75624739D5D00370E9F /* Server.swift */,
 				795DF75424739D5300370E9F /* Client.swift */,
 			);
@@ -216,6 +219,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				79E62C972480E80A00FD6C6D /* GetIPAddresses.swift in Sources */,
 				796D036F2474E75E00DD3052 /* NetClientVC.swift in Sources */,
 				795DF75724739D5D00370E9F /* Server.swift in Sources */,
 				79D72C9124797BB700ED5169 /* NetGameServer.swift in Sources */,

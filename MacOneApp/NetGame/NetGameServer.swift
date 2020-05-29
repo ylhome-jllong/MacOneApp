@@ -53,7 +53,7 @@ class NetGameServer: NSObject,ServerProtocol {
         if (serverState == .serving){return server.serverIP}//服务器已经开启
         else{
             // 测试默认使用127.0.0.1：3200
-            serverState = server.stat(address: "127.0.0.1", port: 3200)
+            serverState = server.stat(address: "0.0.0.0", port: 3200)
             // 设置socket的事件代理
             server.delegate = self
             return server.serverIP

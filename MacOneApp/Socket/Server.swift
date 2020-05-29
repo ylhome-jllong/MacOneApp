@@ -80,7 +80,12 @@ class Server: NSObject {
         switch status {
         case .success:
             serverState = .serving
-            serverIP = "\(tcpServer.address):\(tcpServer.port)"
+            if let address = GetIPAddresses.getPublicIP(){
+                serverIP = "\(address):\(tcpServer.port)"
+            }
+            else{
+                serverIP = "\(tcpServer.address):\(tcpServer.port)"
+            }
             // 开始监听循环
             listenLoop()
             
